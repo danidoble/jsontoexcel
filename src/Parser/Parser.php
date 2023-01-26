@@ -8,6 +8,9 @@
 
 namespace Danidoble\Jsontoexcel\Parser;
 
+use Danidoble\DObject;
+use Danidoble\Jsontoexcel\Spreadsheet\Excel;
+
 /**
  * Parse an object or array to json
  */
@@ -15,31 +18,35 @@ class Parser implements IParser
 {
     /**
      * Store data to parse
-     * @var array|object
+     * @var DObject
      */
-    private array|object $data;
+    private DObject $data;
 
-    public function __construct(null|array|object $data = [])
+    public function __construct(null|string $data = null)
     {
-        $this->set($data);
+        if (!empty($data)) {
+            $this->set($data);
+        } else {
+            $this->set('[]');
+        }
     }
 
     /**
      * Set data to parser
-     * @param array|object $data
+     * @param string $data
      * @return Parser
      */
-    public function set(array|object $data = []): Parser
+    public function set(string $data): Parser
     {
-        $this->data = $data;
+        $this->data = new DObject(json_decode($data));
         return $this;
     }
 
     /**
      * @param bool $json
-     * @return false|array|object
+     * @return false|string|DObject
      */
-    public function get(bool $json = false): false|array|object
+    public function get(bool $json = false): false|string|DObject
     {
         if ($json) {
             return $this->toJson();
@@ -54,7 +61,7 @@ class Parser implements IParser
      */
     public function toJson(): false|string
     {
-        return json_encode($this->data);
+        return $this->data->toJSON();
     }
 
     /**
@@ -71,5 +78,10 @@ class Parser implements IParser
     public function __toString(): string
     {
         return $this->toJson();
+    }
+
+    public function toExcel(): Excel
+    {
+        return new Excel($this->data);
     }
 }

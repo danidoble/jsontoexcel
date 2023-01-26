@@ -8,21 +8,23 @@
 
 namespace Danidoble\Jsontoexcel\Parser;
 
+use Danidoble\DObject;
+
 interface IParser
 {
     /**
      * Set data to parser
-     * @param array|object $data
+     * @param string $data
      * @return Parser
      */
-    public function set(array|object $data): Parser;
+    public function set(string $data): Parser;
 
     /**
      * Get current data
      * @param bool $json
-     * @return false|array|object
+     * @return false|string|DObject
      */
-    public function get(bool $json = false): false|array|object;
+    public function get(bool $json = false): false|string|DObject;
 
     /**
      * Convert data to json
