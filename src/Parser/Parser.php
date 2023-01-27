@@ -9,7 +9,7 @@
 namespace Danidoble\Jsontoexcel\Parser;
 
 use Danidoble\DObject;
-use Danidoble\Jsontoexcel\Spreadsheet\Excel;
+use Danidoble\Jsontoexcel\Spreadsheet\Spread;
 
 /**
  * Parse an object or array to json
@@ -80,8 +80,8 @@ class Parser implements IParser
         return $this->toJson();
     }
 
-    public function toExcel(): Excel
+    public function toExcel(): Spread
     {
-        return new Excel($this->data);
+        return new Spread($this->data);
     }
 }
