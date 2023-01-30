@@ -36,9 +36,17 @@ class Spread implements ISpread
      */
     private string $file_extension = 'xlsx';
     /**
-     * @var array names of columns
+     * @var DObject names of columns
      */
-    private array $keys = [];
+    private DObject $keys;
+    /**
+     * @var DObject
+     */
+    private DObject $custom_keys;
+    /**
+     * @var DObject
+     */
+    private DObject $data;
 
     /**
      * Constructor
@@ -48,7 +56,7 @@ class Spread implements ISpread
     {
         $this->spreadsheet = new Spreadsheet();
         $this->sheet = $this->spreadsheet->getActiveSheet();
-        $this->setDataToFile($info);
+        $this->data = $info;
     }
 
     /**
@@ -124,10 +132,20 @@ class Spread implements ISpread
      */
     public function setDataToFile(DObject $info): void
     {
-        $this->setKeys($info[0]);
-        $count_keys = count($this->keys);
+        if (!isset($this->keys)) {
+            $this->keys = new DObject([]);
+            $k = $info->{'0'};
+            if ($k === null) {
+                $k = new DObject([]);
+            }
+            $this->setPrivateKeys($k);
+        }
+        $count_keys = $this->keys->count();
+        if (!isset($this->custom_keys)) {
+            $this->custom_keys = $this->keys;
+        }
         for ($i = 0; $i < $count_keys; $i++) {
-            $this->sheet->setCellValue($this->getColumn($i) . '1', $this->keys[$i]);
+            $this->sheet->setCellValue($this->getColumn($i) . '1', $this->custom_keys[$i]);
         }
 
         $row = 2;
@@ -141,16 +159,23 @@ class Spread implements ISpread
 
     /**
      * Set column names
-     * @param DObject $info 1st data to get names
+     * @param DObject|array $info 1st data to get names
      * @return $this
      */
-    public function setKeys(DObject $info): Spread
+    public function setKeys(DObject|array $info): Spread
     {
-        $this->keys = [];
-        foreach ($info as $key => $ignore) {
-            $this->keys[] = $key;
-        }
+        $keys = $this->getArrKeys($info);
+        $this->custom_keys = new DObject($keys);
         return $this;
+    }
+
+    /**
+     * Get current keys for titles
+     * @return DObject
+     */
+    public function getKeys(): DObject
+    {
+        return $this->keys;
     }
 
     /**
@@ -209,6 +234,7 @@ class Spread implements ISpread
      */
     public function getFile(): void
     {
+        $this->setDataToFile($this->data);
         $writer = $this->getWriter();
         switch ($this->file_extension) {
             case 'csv':
@@ -231,8 +257,9 @@ class Spread implements ISpread
      */
     public function save(?string $path = null): void
     {
+        $this->setDataToFile($this->data);
         $writer = $this->getWriter();
-        $writer->save(rtrim($path, '/\\').DIRECTORY_SEPARATOR.$this->getFullFileName());
+        $writer->save(rtrim($path, '/\\') . DIRECTORY_SEPARATOR . $this->getFullFileName());
     }
 
     /**
@@ -306,5 +333,40 @@ class Spread implements ISpread
     private function writerCsv(): Csv
     {
         return new Csv($this->spreadsheet);
+    }
+
+    /**
+     * Get keys from array
+     * @param array|DObject $info
+     * @return array
+     */
+    private function getArrKeys(array|DObject $info): array
+    {
+        $keys = [];
+        if (!is_array($info)) {
+            $info = $info->toArray();
+        }
+        $first_key = array_key_first($info);
+        if (is_string($first_key)) {
+            foreach ($info as $key => $ignore) {
+                $keys[] = $key;
+            }
+        } else {
+            foreach ($info as $key) {
+                $keys[] = $key;
+            }
+        }
+        return $keys;
+    }
+
+    /**
+     * Set internal keys to work with, these keys are not able to mutate by user
+     * @param DObject|array $info
+     * @return void
+     */
+    private function setPrivateKeys(DObject|array $info): void
+    {
+        $keys = $this->getArrKeys($info);
+        $this->keys = new DObject($keys);
     }
 }

@@ -71,10 +71,16 @@ interface ISpread
 
     /**
      * Set column names
-     * @param DObject $info 1st data to get names
+     * @param DObject|array $info 1st data to get names
      * @return $this
      */
-    public function setKeys(DObject $info): Spread;
+    public function setKeys(DObject|array $info): Spread;
+
+    /**
+     * Get current keys for titles
+     * @return DObject
+     */
+    public function getKeys(): DObject;
 
     /**
      * Set file name
