@@ -263,6 +263,25 @@ class Spread implements ISpread
     }
 
     /**
+     * get working file
+     * @return Worksheet
+     */
+    public function getWorkingFile(): Worksheet
+    {
+        return $this->sheet;
+    }
+
+    /**
+     * set working file
+     * @return $this
+     */
+    public function setWorkingFile(Worksheet $sheet): static
+    {
+        $this->sheet = $sheet;
+        return $this;
+    }
+
+    /**
      * Get name of column
      * @param int $index get name column (0 = A, 3 = C)
      * @return string

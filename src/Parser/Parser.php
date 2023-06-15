@@ -80,8 +80,21 @@ class Parser implements IParser
         return $this->toJson();
     }
 
-    public function toExcel(): Spread
+    /**
+     * @return Spread
+     */
+    public function toSpread(): Spread
     {
         return new Spread($this->data);
+    }
+
+    /**
+     * @param string $string
+     * @return bool
+     */
+    public function isJson(string $string): bool
+    {
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
     }
 }

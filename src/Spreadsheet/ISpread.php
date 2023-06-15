@@ -9,6 +9,7 @@
 namespace Danidoble\Jsontoexcel\Spreadsheet;
 
 use Danidoble\DObject;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Writer\Exception;
 
 interface ISpread
@@ -128,4 +129,15 @@ interface ISpread
      * @throws Exception
      */
     public function save(?string $path = null): void;
+
+    /**
+     * @return Worksheet
+     */
+    public function getWorkingFile(): Worksheet;
+
+    /**
+     * @param Worksheet $sheet
+     * @return $this
+     */
+    public function setWorkingFile(Worksheet $sheet): static;
 }

@@ -9,6 +9,7 @@
 namespace Danidoble\Jsontoexcel\Parser;
 
 use Danidoble\DObject;
+use Danidoble\Jsontoexcel\Spreadsheet\Spread;
 
 interface IParser
 {
@@ -41,4 +42,15 @@ interface IParser
      * @return string
      */
     public function __toString(): string;
+
+    /**
+     * @return Spread
+     */
+    public function toSpread(): Spread;
+
+    /**
+     * @param string $string
+     * @return bool
+     */
+    public function isJson(string $string): bool;
 }
