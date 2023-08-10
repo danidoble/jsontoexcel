@@ -140,4 +140,10 @@ interface ISpread
      * @return $this
      */
     public function setWorkingFile(Worksheet $sheet): static;
+
+    /**
+     * @param DObject $info
+     * @return Spread
+     */
+    public function setData(DObject $info): Spread;
 }

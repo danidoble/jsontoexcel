@@ -60,6 +60,19 @@ class Spread implements ISpread
     }
 
     /**
+     * @param DObject $info
+     * @return $this
+     */
+    public function setData(DObject $info): Spread
+    {
+        $this->data = $info;
+        if ($info->count() > 0 && ($info->{0} instanceof DObject || is_array($info->{0}))) {
+            $this->setPrivateKeys($info->{0});
+        }
+        return $this;
+    }
+
+    /**
      * Add new sheet to book
      * @param string $title title of new sheet
      * @param int|null $index index of new sheet

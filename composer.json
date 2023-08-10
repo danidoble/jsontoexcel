@@ -1,6 +1,6 @@
 {
     "name": "danidoble/jsontoexcel",
-    "version": "v0.0.1",
+    "version": "v0.0.2",
     "description": "make an excel from json string",
     "type": "library",
     "require": {
