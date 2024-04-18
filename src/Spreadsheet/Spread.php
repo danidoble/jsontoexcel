@@ -11,46 +11,48 @@ namespace Danidoble\Jsontoexcel\Spreadsheet;
 use Danidoble\DObject;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Writer\Exception;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
+use PhpOffice\PhpSpreadsheet\Writer\Exception;
 use PhpOffice\PhpSpreadsheet\Writer\Ods;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use StdClass;
 
-class Spread implements ISpread
+class Spread extends StdClass implements ISpread
 {
     /**
      * @var Spreadsheet current book
      */
     private Spreadsheet $spreadsheet;
+
     /**
      * @var Worksheet current sheet
      */
     private Worksheet $sheet;
+
     /**
      * @var string file name for download or save
      */
     private string $file_name = 'spreadsheet';
+
     /**
      * @var string extension to save or download file
      */
     private string $file_extension = 'xlsx';
+
     /**
      * @var DObject names of columns
      */
     private DObject $keys;
-    /**
-     * @var DObject
-     */
+
     private DObject $custom_keys;
-    /**
-     * @var DObject
-     */
+
     private DObject $data;
 
     /**
      * Constructor
-     * @param DObject $info data to set into Excel
+     *
+     * @param  DObject  $info  data to set into Excel
      */
     public function __construct(DObject $info)
     {
@@ -60,35 +62,37 @@ class Spread implements ISpread
     }
 
     /**
-     * @param DObject $info
      * @return $this
      */
     public function setData(DObject $info): Spread
     {
         $this->data = $info;
         if ($info->count() > 0 && ($info->{0} instanceof DObject || is_array($info->{0}))) {
-            $this->setPrivateKeys($info->{0});
+            $this->setPrivateKeys($info->{0} ?? []);
         }
+
         return $this;
     }
 
     /**
      * Add new sheet to book
-     * @param string $title title of new sheet
-     * @param int|null $index index of new sheet
+     *
+     * @param  string  $title  title of new sheet
+     * @param  int|null  $index  index of new sheet
      * @return $this
+     *
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     public function addSheet(string $title, ?int $index = null): Spread
     {
         $sheet = new Worksheet($this->spreadsheet, $title);
         $this->spreadsheet->addSheet($sheet, $index);
+
         return $this;
     }
 
     /**
      * How many sheets are inside book
-     * @return int
      */
     public function getSheetCount(): int
     {
@@ -97,7 +101,6 @@ class Spread implements ISpread
 
     /**
      * Get sheets names inside book
-     * @return array
      */
     public function getSheetNames(): array
     {
@@ -106,46 +109,52 @@ class Spread implements ISpread
 
     /**
      * Set active worksheet by number (index)
-     * @param int $index number of sheet (0,1...n)
+     *
+     * @param  int  $index  number of sheet (0,1...n)
      * @return $this
+     *
      * @throws \PhpOffice\PhpSpreadsheet\Exception
      */
     public function setActiveSheet(int $index = 0): Spread
     {
         $this->sheet = $this->spreadsheet->getSheet($index);
+
         return $this;
     }
 
     /**
      * Set active worksheet by name of sheet
-     * @param string $name name of the sheet
+     *
+     * @param  string  $name  name of the sheet
      * @return $this
      */
     public function setActiveSheetByName(string $name): Spread
     {
         $this->sheet = $this->spreadsheet->getSheetByName($name);
+
         return $this;
     }
 
     /**
      * Set name to current sheet
-     * @param string $name
+     *
      * @return $this
      */
     public function setSheetName(string $name): Spread
     {
         $this->sheet->setTitle($name);
+
         return $this;
     }
 
     /**
      * Set data to file
-     * @param DObject $info data to put inside sheet book
-     * @return void
+     *
+     * @param  DObject  $info  data to put inside sheet book
      */
     public function setDataToFile(DObject $info): void
     {
-        if (!isset($this->keys)) {
+        if (! isset($this->keys)) {
             $this->keys = new DObject([]);
             $k = $info->{'0'};
             if ($k === null) {
@@ -154,17 +163,17 @@ class Spread implements ISpread
             $this->setPrivateKeys($k);
         }
         $count_keys = $this->keys->count();
-        if (!isset($this->custom_keys)) {
+        if (! isset($this->custom_keys)) {
             $this->custom_keys = $this->keys;
         }
         for ($i = 0; $i < $count_keys; $i++) {
-            $this->sheet->setCellValue($this->getColumn($i) . '1', $this->custom_keys[$i]);
+            $this->sheet->setCellValue($this->getColumn($i).'1', $this->custom_keys[$i]);
         }
 
         $row = 2;
         foreach ($info as $data) {
             for ($i = 0; $i < $count_keys; $i++) {
-                $this->sheet->setCellValue($this->getColumn($i) . $row, $data[$this->keys[$i]]);
+                $this->sheet->setCellValue($this->getColumn($i).$row, $data[$this->keys[$i]]);
             }
             $row++;
         }
@@ -172,19 +181,20 @@ class Spread implements ISpread
 
     /**
      * Set column names
-     * @param DObject|array $info 1st data to get names
+     *
+     * @param  DObject|array  $info  1st data to get names
      * @return $this
      */
     public function setKeys(DObject|array $info): Spread
     {
         $keys = $this->getArrKeys($info);
         $this->custom_keys = new DObject($keys);
+
         return $this;
     }
 
     /**
      * Get current keys for titles
-     * @return DObject
      */
     public function getKeys(): DObject
     {
@@ -193,18 +203,18 @@ class Spread implements ISpread
 
     /**
      * Set file name
-     * @param string $name
+     *
      * @return $this
      */
     public function setFileName(string $name): Spread
     {
         $this->file_name = $name;
+
         return $this;
     }
 
     /**
      * get current file name
-     * @return string
      */
     public function getFileName(): string
     {
@@ -213,7 +223,6 @@ class Spread implements ISpread
 
     /**
      * get current extension
-     * @return string
      */
     public function getExtension(): string
     {
@@ -222,27 +231,27 @@ class Spread implements ISpread
 
     /**
      * get full current file name
-     * @return string
      */
     public function getFullFileName(): string
     {
-        return urlencode($this->getFileName() . '.' . $this->getExtension());
+        return urlencode($this->getFileName().'.'.$this->getExtension());
     }
 
     /**
      * set type file (extension)
-     * @param string $extension
+     *
      * @return $this
      */
     public function setTypeFile(string $extension = 'xlsx'): Spread
     {
         $this->setExtension($extension);
+
         return $this;
     }
 
     /**
      * get file (download without save it)
-     * @return void
+     *
      * @throws Exception
      */
     public function getFile(): void
@@ -251,33 +260,33 @@ class Spread implements ISpread
         $writer = $this->getWriter();
         switch ($this->file_extension) {
             case 'csv':
-                header("Content-Type: text/csv");
+                header('Content-Type: text/csv');
                 break;
             default:
                 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
                 break;
         }
 
-        header('Content-Disposition: attachment; filename="' . $this->getFullFileName() . '"');
+        header('Content-Disposition: attachment; filename="'.$this->getFullFileName().'"');
         $writer->save('php://output');
     }
 
     /**
      * save file
-     * @param string|null $path path to save file
-     * @return void
+     *
+     * @param  string|null  $path  path to save file
+     *
      * @throws Exception
      */
     public function save(?string $path = null): void
     {
         $this->setDataToFile($this->data);
         $writer = $this->getWriter();
-        $writer->save(rtrim($path, '/\\') . DIRECTORY_SEPARATOR . $this->getFullFileName());
+        $writer->save(rtrim($path, '/\\').DIRECTORY_SEPARATOR.$this->getFullFileName());
     }
 
     /**
      * get working file
-     * @return Worksheet
      */
     public function getWorkingFile(): Worksheet
     {
@@ -286,31 +295,34 @@ class Spread implements ISpread
 
     /**
      * set working file
+     *
      * @return $this
      */
     public function setWorkingFile(Worksheet $sheet): static
     {
         $this->sheet = $sheet;
+
         return $this;
     }
 
     /**
      * Get name of column
-     * @param int $index get name column (0 = A, 3 = C)
-     * @return string
+     *
+     * @param  int  $index  get name column (0 = A, 3 = C)
      */
     private function getColumn(int $index): string
     {
-        for ($r = ""; $index >= 0; $index = intval($index / 26) - 1) {
-            $r = chr($index % 26 + 0x41) . $r;
+        for ($r = ''; $index >= 0; $index = intval($index / 26) - 1) {
+            $r = chr($index % 26 + 0x41).$r;
         }
+
         return $r;
     }
 
     /**
      * Assign extension of file
-     * @param string $extension extension type
-     * @return void
+     *
+     * @param  string  $extension  extension type
      */
     private function setExtension(string $extension): void
     {
@@ -319,7 +331,6 @@ class Spread implements ISpread
 
     /**
      * make writer with right extension type
-     * @return Ods|Csv|Xlsx|Xls
      */
     private function getWriter(): Ods|Csv|Xlsx|Xls
     {
@@ -333,7 +344,6 @@ class Spread implements ISpread
 
     /**
      * Get Writer of xlsx
-     * @return Xlsx
      */
     private function writerXlsx(): Xlsx
     {
@@ -342,7 +352,6 @@ class Spread implements ISpread
 
     /**
      * Get Writer of xls
-     * @return Xls
      */
     private function writerXls(): Xls
     {
@@ -351,7 +360,6 @@ class Spread implements ISpread
 
     /**
      * Get Writer of ods
-     * @return Ods
      */
     private function writerOds(): Ods
     {
@@ -360,7 +368,6 @@ class Spread implements ISpread
 
     /**
      * Get Writer of csv
-     * @return Csv
      */
     private function writerCsv(): Csv
     {
@@ -369,13 +376,11 @@ class Spread implements ISpread
 
     /**
      * Get keys from array
-     * @param array|DObject $info
-     * @return array
      */
     private function getArrKeys(array|DObject $info): array
     {
         $keys = [];
-        if (!is_array($info)) {
+        if (! is_array($info)) {
             $info = $info->toArray();
         }
         $first_key = array_key_first($info);
@@ -388,13 +393,12 @@ class Spread implements ISpread
                 $keys[] = $key;
             }
         }
+
         return $keys;
     }
 
     /**
      * Set internal keys to work with, these keys are not able to mutate by user
-     * @param DObject|array $info
-     * @return void
      */
     private function setPrivateKeys(DObject|array $info): void
     {
